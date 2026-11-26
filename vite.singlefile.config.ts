@@ -1,8 +1,8 @@
 import { defineConfig, type Plugin } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import tailwindcss from '@tailwindcss/vite';
-import { viteSingleFile } from '../cotilla-bootstrap/node_modules/vite-plugin-singlefile/dist/esm/index.js';
-import { minify } from '../cotilla-bootstrap/node_modules/html-minifier-terser/src/htmlminifier.js';
+import { viteSingleFile } from 'vite-plugin-singlefile';
+import { minify } from 'html-minifier-terser';
 import path from 'node:path';
 import pkg from './package.json' with { type: 'json' };
 
