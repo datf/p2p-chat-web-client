@@ -9,6 +9,7 @@ static
 .wrangler
 /.svelte-kit
 /build
+/dist-singlefile
 
 # OS
 .DS_Store
