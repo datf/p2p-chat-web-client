@@ -33,5 +33,8 @@
 		"typescript": "^6.0.3",
 		"vite": "^8.3.0",
 		"vite-plugin-singlefile": "^2.3.4"
+	},
+	"dependencies": {
+		"@datf/cotilla-wasm": "^0.0.1"
 	}
 }

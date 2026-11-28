@@ -184,6 +184,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@datf/cotilla-wasm':
+        specifier: ^0.0.1
+        version: 0.0.1
     devDependencies:
       '@sveltejs/adapter-static':
         specifier: ^4.0.0
@@ -220,6 +224,10 @@ importers:
         version: 2.3.4(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0)(terser@5.51.4))
 
 packages:
+
+  '@datf/cotilla-wasm@0.0.1':
+    resolution: {integrity: sha512-9/OJAsy9awMgZPQZvfy0ay70QbYxhEO6n3NKeyF9ehtAmM276uBe0vD/s3IHsBHOcp/nz9ZMmxxl1oeggCvzNQ==}
+    engines: {node: '26'}
 
   '@emnapi/core@2.0.0-beta.2':
     resolution: {integrity: sha512-MzCVoWtcg4Pm2B3je5mMvYMvj3MmBKw+fU7vbsJc9/iT8ip6/eYIHo/Dsm/mr+wsHB6SEyJDuxB09Yy6r/8+4A==}
@@ -875,6 +883,8 @@ packages:
     resolution: {integrity: sha512-msJxIvYDYcoNL+PJsu+7qmpDWsYmAxTY+2TNYXXF0hzBzBk0BMecOqDOG/EckUoKCuKwObfbugIl8QpqHDXeFA==}
 
 snapshots:
+
+  '@datf/cotilla-wasm@0.0.1': {}
 
   '@emnapi/core@2.0.0-beta.2':
     dependencies:

@@ -42,20 +42,23 @@ function resolveWasmExec(): string {
 	return found;
 }
 
-function resolveWasmPath(): string | undefined {
+function resolveWasmPath(): string {
 	const candidates: string[] = [];
 	if (process.env.COTILLA_WASM_DIR) {
 		candidates.push(path.resolve(dir, process.env.COTILLA_WASM_DIR, 'cotilla.wasm'));
 	}
 	candidates.push(path.resolve(dir, '../dist/wasm/cotilla.wasm'));
 	try {
-		const pkgDir = path.dirname(require.resolve('@datf/cotilla-wasm/package.json'));
-		candidates.push(path.join(pkgDir, 'cotilla.wasm'));
+		candidates.push(require.resolve('@datf/cotilla-wasm/cotilla.wasm'));
 	} catch {
 		// Optional npm package fallback for standalone builds
 	}
 	candidates.push(path.resolve(dir, '../dist/web/cotilla.wasm'));
-	return firstExisting(candidates);
+	const found = firstExisting(candidates);
+	if (!found) {
+		throw new Error('cotilla.wasm not found in COTILLA_WASM_DIR, ../dist/wasm, @datf/cotilla-wasm, or ../dist/web');
+	}
+	return found;
 }
 
 function resolveWebAsset(filename: string): string | undefined {
@@ -73,9 +76,8 @@ function syncCotillaStaticAssets(): Plugin {
 		const staticDir = path.resolve(dir, 'static');
 		fs.mkdirSync(staticDir, { recursive: true });
 		const wasmSrc = resolveWasmPath();
-		if (wasmSrc) {
-			fs.copyFileSync(wasmSrc, path.join(staticDir, 'cotilla.wasm'));
-		}
+		console.info(`[svelte] using cotilla.wasm from ${wasmSrc}`);
+		fs.copyFileSync(wasmSrc, path.join(staticDir, 'cotilla.wasm'));
 		fs.copyFileSync(resolveWasmExec(), path.join(staticDir, 'wasm_exec.js'));
 		for (const name of ['cotilla.js', 'sframe-worker.js']) {
 			const src = resolveWebAsset(name);
