@@ -15,14 +15,29 @@ function firstExisting(paths: string[]): string | undefined {
 	return paths.find((p) => fs.existsSync(p));
 }
 
-function resolveGoWasmExec(): string {
-	const goroot = execFileSync('go', ['env', 'GOROOT'], { encoding: 'utf-8' }).trim();
-	const found = firstExisting([
-		path.join(goroot, 'lib', 'wasm', 'wasm_exec.js'),
-		path.join(goroot, 'misc', 'wasm', 'wasm_exec.js')
-	]);
+function resolveWasmExec(): string {
+	const candidates: string[] = [];
+	if (process.env.COTILLA_WASM_DIR) {
+		candidates.push(path.resolve(dir, process.env.COTILLA_WASM_DIR, 'wasm_exec.js'));
+	}
+	candidates.push(path.resolve(dir, '../dist/wasm/wasm_exec.js'));
+	try {
+		candidates.push(require.resolve('@datf/cotilla-wasm/wasm_exec.js'));
+	} catch {
+		// Optional npm package fallback for standalone builds
+	}
+	try {
+		const goroot = execFileSync('go', ['env', 'GOROOT'], { encoding: 'utf-8' }).trim();
+		candidates.push(
+			path.join(goroot, 'lib', 'wasm', 'wasm_exec.js'),
+			path.join(goroot, 'misc', 'wasm', 'wasm_exec.js')
+		);
+	} catch {
+		// Go toolchain is optional when @datf/cotilla-wasm is installed
+	}
+	const found = firstExisting(candidates);
 	if (!found) {
-		throw new Error(`wasm_exec.js not found in GOROOT (${goroot})`);
+		throw new Error('wasm_exec.js not found in COTILLA_WASM_DIR, ../dist/wasm, @datf/cotilla-wasm, or GOROOT');
 	}
 	return found;
 }
@@ -61,7 +76,7 @@ function syncCotillaStaticAssets(): Plugin {
 		if (wasmSrc) {
 			fs.copyFileSync(wasmSrc, path.join(staticDir, 'cotilla.wasm'));
 		}
-		fs.copyFileSync(resolveGoWasmExec(), path.join(staticDir, 'wasm_exec.js'));
+		fs.copyFileSync(resolveWasmExec(), path.join(staticDir, 'wasm_exec.js'));
 		for (const name of ['cotilla.js', 'sframe-worker.js']) {
 			const src = resolveWebAsset(name);
 			if (src) {

@@ -5,19 +5,36 @@ import { viteSingleFile } from 'vite-plugin-singlefile';
 import { minify } from 'html-minifier-terser';
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import pkg from './package.json' with { type: 'json' };
 
+const require = createRequire(import.meta.url);
 const dir = typeof import.meta.dirname !== 'undefined' ? import.meta.dirname : path.dirname(new URL(import.meta.url).pathname);
 
 function resolveWasmExec(): string {
-	const goroot = execFileSync('go', ['env', 'GOROOT'], { encoding: 'utf-8' }).trim();
-	const found = [
-		path.join(goroot, 'lib', 'wasm', 'wasm_exec.js'),
-		path.join(goroot, 'misc', 'wasm', 'wasm_exec.js')
-	].find((p) => fs.existsSync(p));
+	const candidates: string[] = [];
+	if (process.env.COTILLA_WASM_DIR) {
+		candidates.push(path.resolve(dir, process.env.COTILLA_WASM_DIR, 'wasm_exec.js'));
+	}
+	candidates.push(path.resolve(dir, '../dist/wasm/wasm_exec.js'));
+	try {
+		candidates.push(require.resolve('@datf/cotilla-wasm/wasm_exec.js'));
+	} catch {
+		// Optional npm package fallback for standalone builds
+	}
+	try {
+		const goroot = execFileSync('go', ['env', 'GOROOT'], { encoding: 'utf-8' }).trim();
+		candidates.push(
+			path.join(goroot, 'lib', 'wasm', 'wasm_exec.js'),
+			path.join(goroot, 'misc', 'wasm', 'wasm_exec.js')
+		);
+	} catch {
+		// Go toolchain is optional when @datf/cotilla-wasm is installed
+	}
+	const found = candidates.find((p) => fs.existsSync(p));
 	if (!found) {
-		throw new Error(`wasm_exec.js not found in GOROOT (${goroot})`);
+		throw new Error('wasm_exec.js not found in COTILLA_WASM_DIR, ../dist/wasm, @datf/cotilla-wasm, or GOROOT');
 	}
 	return found;
 }
