@@ -4,11 +4,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 async function main() {
-  const serverBin = fs.existsSync('./bin/cotilla-server')
-    ? './bin/cotilla-server'
-    : fs.existsSync('../bin/cotilla-server')
-      ? '../bin/cotilla-server'
-      : null;
+  const candidates = [
+    process.env.COTILLA_SERVER_BIN,
+    '../dist/bin/cotilla-server',
+    './dist/bin/cotilla-server',
+    './bin/cotilla-server',
+    '../bin/cotilla-server'
+  ].filter(Boolean);
+  const serverBin = candidates.find((p) => fs.existsSync(p)) || null;
   assert.ok(serverBin, 'cotilla-server binary must exist (run make server)');
 
   const webDir = fs.existsSync('build') ? 'build' : 'svelte/build';
